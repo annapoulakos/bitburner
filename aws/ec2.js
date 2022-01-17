@@ -30,7 +30,7 @@ const SERVER_NAMES = [
     'sa-east-1',
     'us-gov-east-1',
     'us-gov-east-2',
-    'bitburner-east-1',
+    'anna-wi-1',
 ];
 
 /**
@@ -87,19 +87,67 @@ function _createInstance(ns) {
 
 /**
  * @param {NS} ns
+ */
+function _deleteAllInstances(ns) {
+    const instances = ns.getPurchasedServers();
+
+    for (const instance of instances) {
+        ns.deleteServer(instance);
+    }
+    return [];
+}
+
+/**
+ * @param {NS} ns
+ */
+function _deleteInstance(ns) {
+    const instance = ns.args[0];
+    ns.deleteServer(instance);
+    return [];
+}
+
+/**
+ * @param {NS} ns
+ */
+function _describeInstances(ns) {
+    const instances = ns.getPurchasedServers();
+    utils.log(instances);
+
+    let result = {
+        Instances: [],
+    };
+
+    for (const instance of instances) {
+        const server = ns.getServer(instance);
+
+        result['Instances'].push({
+            'instanceId': instance,
+            'ipAddress': server.ip,
+            'maxRam': server.maxRam,
+        });
+    }
+    return result['Instances'].map(i => JSON.stringify(i));
+}
+
+/**
+ * @param {NS} ns
  **/
 export async function main(ns) {
+    await ns.write('/data/aws-ec2.txt', FLAGS, "w");
     utils.configure(ns, FLAGS);
 
     const command = ns.args[0];
 
     const fn = {
         'create-instance': _createInstance,
+        'delete-all-instances': _deleteAllInstances,
+        'delete-instance': _deleteInstance,
+        'describe-instances': _describeInstances,
     }[command] || _help;
 
     const output = fn(ns);
 
-    for (line of output) {
+    for (const line of output) {
         ns.print(line);
     }
 }

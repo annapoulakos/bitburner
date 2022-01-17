@@ -13,7 +13,7 @@ var _logger = null;
 export function configure(ns, custom_flags) {
     _logger = ns.tprint;
 
-
+    const new_flags = FLAGS.concat(custom_flags);
     flags = ns.flags(FLAGS.concat(custom_flags));
 }
 

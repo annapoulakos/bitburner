@@ -1,5 +1,6 @@
 import * as utils from "aws/aws-utils.js";
 
+const FLAGS = [["size", 32]];
 /**
  * AWS-CLI (Anna Web Services - Command Line Interface)
  *      creates a new server provided the RAM for the server
@@ -11,7 +12,7 @@ import * as utils from "aws/aws-utils.js";
  * @param {NS} ns
  **/
 export async function main(ns) {
-    utils.configure(ns, []);
+    utils.configure(ns, FLAGS);
 
     const commandBase = ns.args[0],
           nsArgs = ns.args.map(x=>x);
