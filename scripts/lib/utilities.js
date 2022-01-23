@@ -28,3 +28,12 @@ export function log(message) {
         ns.print(message);
     }
 }
+
+/**
+ * Reads a given file without needing to pass NS around everywhere
+ * @param {string} filename
+ * @returns string
+ */
+export function read(filename) {
+    return ns.read(filename);
+}

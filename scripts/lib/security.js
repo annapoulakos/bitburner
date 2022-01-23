@@ -6,6 +6,7 @@ export class Security {
      */
     constructor(_ns) {
         this.ns = _ns;
+        utils.configure(_ns);
 
         this.pl = {
             ssh:_ns.brutessh,

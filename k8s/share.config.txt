@@ -1,0 +1,6 @@
+servers:8
+ram:512
+prefix:share
+scripts:/scripts/bin/share.js
+scripts:/scripts/bin/spin.js
+run:/scripts/bin/share.js
