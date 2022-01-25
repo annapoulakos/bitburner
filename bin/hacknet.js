@@ -85,7 +85,7 @@ export async function main(ns) {
 			running = false;
 		}
 
-		log('[hacknet] => sleeping for 5 seconds');
-		await ns.sleep(5000);
+		log('[hacknet] => sleeping for 10 seconds');
+		await ns.sleep(10000);
 	}
 }

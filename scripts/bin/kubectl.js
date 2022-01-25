@@ -6,13 +6,15 @@ const COMMANDS = {
     get: _get,
     run: _run,
     delete: _delete,
-    replace: _replace
+    replace: _replace,
+    start: _start
 };
 
 export function autocomplete(data, args) {
     return [
         ...Object.keys(COMMANDS),
-        ...data.servers
+        ...data.servers,
+        ...data.txts
     ];
 }
 
@@ -29,32 +31,42 @@ async function _get() {
 }
 
 async function _run() {
+    // TODO: Make sure you can't run this thing twice.
+    //       We will need to track things that are running and
+    //       add a stop method
     const script = ns.args[0];
     utils.log(`[kubectl:run] => running configuration ${script}`);
     let config = KubeConfig.Factory(ns, script);
 
-    utils.log(`[kubectl:run] => building servers...`);
+    utils.log(`[kubectl:run] => building ${config.servers} servers...`);
     for (let x = 0; x < config.servers; x++) {
         ns.purchaseServer(`${config.prefix}-${x}`, config.ram);
     }
 
     utils.log(`[kubectl:run] => copying required files...`);
-    let servers = ns.getPurchasedServers();
+    let servers = ns.getPurchasedServers().filter(s => s.startsWith(config.prefix));
     for (const server of servers) {
-        if (server.startsWith(config.prefix)) {
-            utils.log(`[kubectl:run] => copying files from home to ${server}`);
-            await ns.scp(config.scripts, "home", server);
-        }
+        utils.log(`[kubectl:run] => copying files from home to ${server}`);
+        await ns.scp(config.scripts, "home", server);
     }
 
     utils.log(`[kubectl:run] => starting servers...`);
     for (const server of servers) {
-        if (server.startsWith(config.prefix)) {
-            for (const filename of config.run) {
-                ns.exec(filename, server, 1);
-            }
-        }
+        utils.log(`[kubectl:run] => executing ${config.run} on ${server}`);
+        ns.exec(config.run, server, 1);
     }
+}
+
+async function _start() {
+    utils.log(`[kubectl:run] => running configuration ${script}`);
+    let config = KubeConfig.Factory(ns, script),
+        servers = ns.getPurchasedServers().filter(s => s.startsWith(config.prefix));
+
+    servers.forEach(server => {
+        utils.log(`[kubectl:start] => running ${config.run} on ${server}`);
+
+        ns.exec(config.run, server, 1);
+    });
 }
 
 async function _delete() {

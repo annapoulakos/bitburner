@@ -20,18 +20,15 @@ export class KubeConfig {
             ram = 0,
             prefix = 'anna',
             scripts = [],
-            run = [];
+            run = '/scripts/bin/entrypoint.js';
 
         for (const line of lines) {
             const [c, x] = line.split(':');
-            utils.log(`[KubeConfig:Factory] => ${line}`);
-            utils.log(`[KubeConfig:Factory] => ${c} -- ${x}`);
-
             if (c == "servers") servers = parseInt(x);
             if (c == "ram") ram = parseInt(x);
             if (c == "prefix") prefix = x.replace(/[\n\r\t\s]+/gm, '');
             if (c == "scripts") scripts.push(x.replace(/[\n\r\t\s]+/gm, ''));
-            if (c == "run") run.push(x.replace(/[\n\r\t\s]+/gm, ''));
+            if (c == "run") run = x.replace(/[\n\r\t\s]+/gm, '');
         }
 
         return new KubeConfig(servers, ram, prefix, scripts, run);
