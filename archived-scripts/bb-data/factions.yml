@@ -1,0 +1,52 @@
+factions:
+  netburners:
+    entry: no idea
+    augs:
+      - Hacknet Node NIC Architecture Neural-Upload
+      - Hacknet Node Cache Architecture Neural-Upload
+      - Hacknet CPU Architecture Neural-Upload
+      - Hacknet Kernel Direct-Neural Interface
+      - Hacknet Core Direct-Neural Interface
+  cybersec:
+    entry: backdoor on CSEC
+    augs:
+      - Synaptic Enhancement Implant
+      - BitWire
+      - Cranial Signal Processors - Gen I
+      - Cranial Signal Processors - Gen II
+  theblackhand:
+    entry: backdoor on I.I.I.I
+    augs:
+      - Artifical Synaptic Potentiation
+      - Embedded Netburner Module
+      - Neuralstimulator
+      - Cranial Signal Processors - Gen III
+      - Enhanced Myelin Sheathing
+      - The Black Hand
+      - DataJack
+      - Cranial Signal Processors - Gen IV
+      - Embedded Netburner Module Core Implant
+  foursigma:
+    entry: 200k company rep
+    augs:
+      - Speech Enhancement
+      - ADR-V1 Pheremone Gene
+      - Nuoptimal Nootropic Injector Implant
+      - Neurotrainer III
+      - Neuralstimulator
+      - ADR-V2 Pheremone Gene
+      - FocusWire
+      - Enhanced Social Interaction Implant
+      - PC Direct-Neural Interface
+  nightsec:
+    entry: backdoor on avmnite-02h
+    augs:
+      - BitWire
+      - Artificial Synaptic Potentiation
+      - Neurotrainer II
+      - Embedded Netburner Module
+      - Cranial Signal Processors Gen II
+      - Neural-Retention Enhancement
+      - CRTX42-AA Gene Modification
+      - Cranial Signal Processors - Gen III
+      - DataJack

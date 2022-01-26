@@ -2,7 +2,7 @@ import * as utils from "/scripts/lib/utilities.js";
 import {Security} from "/scripts/lib/security.js";
 
 const SLEEP_DELAY_MS = 30000,
-      THREAD_POOL = 250;
+      THREAD_POOL = 1;
 
 let ns = null;
 

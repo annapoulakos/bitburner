@@ -3,6 +3,24 @@ const FLAGS = [
     ['silent', false]
 ];
 
+export const PORTS = {
+    info: {
+        in: 5,
+        out: 6
+    },
+    db: {
+        in: 7,
+        out: 8
+    },
+    k8s: {
+        in: 10,
+        out: 11
+    },
+    batch: {
+        in: 15,
+        out: 16
+    }
+};
 
 let ns = null,
     flags = {};

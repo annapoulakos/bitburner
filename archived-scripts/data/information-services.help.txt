@@ -1,0 +1,9 @@
+Information Services Manual
+
+Setup:
+    alias is="run information-services.js "
+
+Usage:
+
+is help => displays this help text
+is list => lists

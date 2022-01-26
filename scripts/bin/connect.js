@@ -1,6 +1,12 @@
 import * as utils from "/scripts/lib/utilities.js";
 let ns = null;
 
+export function autocomplete(data, args) {
+    return [
+        ...data.servers
+    ];
+}
+
 export async function main(_ns) {
     ns = _ns;
     utils.configure(_ns);

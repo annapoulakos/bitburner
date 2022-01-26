@@ -2,6 +2,27 @@ import * as utils from "/scripts/lib/utilities.js";
 
 let ns = null;
 
+export async function stat() {
+    utils.log('[statistician::main] => loading nodes...');
+    let nodes = ns.fileExists('/data/statistician.graph.txt')?
+        ns.read('/data/statistician.graph.txt').split(','):
+        await _buildGraph();
+
+    let rooted = [], backdoor = [], targets = [];
+    nodes.forEach(node => {
+        utils.log(`[statistician::main] => loading data for ${node}`);
+        const server = ns.getServer(node);
+        if (server.hasAdminRights) { rooted.push(server.hostname); }
+        if (server.backdoorInstalled) { backdoor.push(server.hostname); }
+        if (!server.hasAdminRights && ns.getHackingLevel() >= server.requiredHackingSkill) { targets.push(server.hostname); }
+    });
+
+    utils.log('[statistician::main] => writing data files...');
+    await ns.write('/data/statistician.rooted.txt', rooted, "w");
+    await ns.write('/data/statistician.backdoor.txt', backdoor, "w");
+    await ns.write('/data/statistician.targets.txt', targets, "w");
+}
+
 async function _buildGraph() {
     utils.log('[statistician::_buildGraph] => generating graph...')
     let visited = [],
@@ -36,22 +57,5 @@ export async function main(_ns) {
     ns = _ns;
     utils.configure(_ns);
 
-    utils.log('[statistician::main] => loading nodes...');
-    let nodes = ns.fileExists('/data/statistician.graph.txt')?
-        ns.read('/data/statistician.graph.txt').split(','):
-        await _buildGraph();
-
-    let rooted = [], backdoor = [], targets = [];
-    nodes.forEach(node => {
-        utils.log(`[statistician::main] => loading data for ${node}`);
-        const server = ns.getServer(node);
-        if (server.hasAdminRights) { rooted.push(server.hostname); }
-        if (server.backdoorInstalled) { backdoor.push(server.hostname); }
-        if (!server.hasAdminRights && ns.getHackingLevel() >= server.requiredHackingSkill) { targets.push(server.hostname); }
-    });
-
-    utils.log('[statistician::main] => writing data files...');
-    await ns.write('/data/statistician.rooted.txt', rooted, "w");
-    await ns.write('/data/statistician.backdoor.txt', backdoor, "w");
-    await ns.write('/data/statistician.targets.txt', targets, "w");
+    await stat();
 }

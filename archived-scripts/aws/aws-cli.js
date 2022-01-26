@@ -1,6 +1,7 @@
 import * as utils from "aws/aws-utils.js";
 
-const FLAGS = [["size", 32]];
+const FLAGS = [["size", 32]]; // TODO: fix this so i don't have to grab a bajillion different flags. Maybe do it after i grab the command name so i can grab the flags from the various packages.
+
 /**
  * AWS-CLI (Anna Web Services - Command Line Interface)
  *      creates a new server provided the RAM for the server

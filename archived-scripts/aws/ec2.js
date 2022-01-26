@@ -30,7 +30,12 @@ const SERVER_NAMES = [
     'sa-east-1',
     'us-gov-east-1',
     'us-gov-east-2',
-    'anna-wi-1',
+    'anna-east-1',
+    'anna-east-2',
+    'anna-west-1',
+    'anna-west-2',
+    'anna-central-1',
+    'anna-central-2',
 ];
 
 /**
