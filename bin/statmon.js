@@ -10,6 +10,7 @@ export function autocomplete(data, args) {
 }
 
 async function _buildGraph() {
+    utils.log('[statmon] => updating source server list');
     let v = [], t = ['home'], p = ns.getPurchasedServers();
     p.push('home');
     p.push('darkweb');
@@ -25,6 +26,7 @@ async function _buildGraph() {
 }
 
 async function _updateRooted() {
+    utils.log('[statmon] => updating rooted server list');
     const hosts = store.get('hosts'),
           rooted = hosts.filter(host => ns.hasRootAccess(host));
 
@@ -33,6 +35,7 @@ async function _updateRooted() {
 }
 
 async function _updateBackdoors() {
+    utils.log('[statmon] => updating backdoored server list');
     const hosts = store.get('hosts'),
           backdoors = hosts.filter(host => {
               const s = ns.getServer(host);
@@ -43,6 +46,31 @@ async function _updateBackdoors() {
     await ns.sleep(0);
 }
 
+async function _updateTargets() {
+    utils.log('[statmon] => updating target server list');
+    const hosts = store.get('hosts'),
+          rooted = store.get('rooted'),
+          HL = ns.getHackingLevel(),
+          targets = hosts.filter(host => !rooted.includes(host)).filter(host => HL >= ns.getServerRequiredHackingLevel(host));
+
+    store.set('targets', targets);
+    await ns.sleep(0);
+}
+
+async function _updateServerAttributes() {
+    utils.log(`[statmon] => updating server attributes`);
+    const hosts = store.get('hosts');
+
+    for (const host of hosts) {
+        const ram = ns.getServerMaxRam(host),
+              money = ns.getServerMaxMoney(host);
+
+        store.set(`${host}:ram`, ram);
+        store.set(`${host}:money`, money);
+        await ns.sleep(0);
+    }
+}
+
 /**
     * @param {NS} _ns
     */
@@ -50,10 +78,15 @@ export async function main(_ns) {
     ns = _ns;
     utils.configure(_ns);
 
-    if (ns.args[0] == 'new') {
-        await _buildGraph();
-    } else if (ns.args[0] == 'update') {
+    await _buildGraph();
+    await _updateServerAttributes();
+
+    while (true) {
         await _updateRooted();
         await _updateBackdoors();
+        await _updateTargets();
+
+
+        await ns.sleep(500);
     }
 }
