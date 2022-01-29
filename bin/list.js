@@ -1,18 +1,38 @@
 import * as utils from '/scripts/lib/utilities.js';
-const localStorage = globalThis['window'].localStorage;
+import * as store from '/scripts/lib/store.js';
+
 let ns;
 
-export function autocomplete(data, args) {
-    return [
+function _listRam() {
+    const hosts = store.getItem('hosts'),
+          memory = hosts.map(host => store.getItem(`${host}:ram`));
 
-    ];
+    for (const i in hosts) {
+        ns.tprint(`${hosts[i]} => ${memory[i]}`);
+    }
 }
+
+function _listMoney() {
+    const hosts = store.getItem('hosts'),
+          memory = hosts.map(host => store.getItem(`${host}:money`));
+
+    for (const i in hosts) {
+        ns.tprint(`${hosts[i]} => ${money[i]}`);
+    }
+}
+
 
 function _list(key) {
-    const hosts = JSON.parse(localStorage.getItem(key));
+    if (key == 'ram') {
+        _listRam();
+        return;
+    } else if (key == 'money') {
+        _listMoney();
+        return;
+    }
+    const hosts = store.getItem(key);
     hosts.forEach(host => ns.tprint(host));
 }
-
 
 /**
     * @param {NS} _ns
@@ -24,4 +44,10 @@ export async function main(_ns) {
     const key = ns.args[0] || 'hosts';
 
     _list(key);
+}
+
+export function autocomplete(data, args) {
+    return [
+        'hosts', 'rooted', 'backdoors', 'ram', 'money'
+    ];
 }

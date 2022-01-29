@@ -6,23 +6,22 @@ export async function main(ns) {
           threads = ns.args[1];
 
     const files = [
-        "/bin/_grow.js",
-        "/bin/_weaken.js",
         "/bin/_hack.js",
+        "/bin/_weaken.js",
+        "/bin/_grow.js",
         "/bin/_weaken.js"
     ];
-    await ns.scp(files, "home", server);
 
     let step = 0;
     while (true) {
         const growTime = ns.getGrowTime(server) + SLEEP_DELAY_MS,
               weakenTime = ns.getWeakenTime(server) + SLEEP_DELAY_MS,
               hackTime = ns.getHackTime(server) + SLEEP_DELAY_MS,
-              timers = [growTime, weakenTime, hackTime, weakenTime];
+              timers = [hackTime, weakenTime, growTime, weakenTime];
 
-        ns.exec(files[step%4], "home", threads, server);
+        ns.exec(files[step%4], server, threads, server);
 
         await ns.sleep(timers[step%4]);
-        step++;
+        step = (step++) % 4;
     }
 }

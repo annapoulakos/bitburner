@@ -1,10 +1,10 @@
 const _localStorage = globalThis['window'].localStorage;
 
 
-export function set (key, value) {
+export function setItem (key, value) {
     _localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function get (key) {
+export function getItem (key) {
     return JSON.parse(_localStorage.getItem(key));
 }
