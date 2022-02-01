@@ -1,3 +1,4 @@
+// TODO: Refactor to use utils.* and store.*
 const FLAGS = [
 	['verbose', false],
 	['maxprod', 500000]

@@ -1,5 +1,5 @@
-import * as utils from '/scripts/lib/utilities.js';
-import * as store from '/scripts/lib/store.js';
+import * as utils from '/lib/utilities.js';
+import * as store from '/lib/store.js';
 
 const SHARE_SLEEP_MS = 10200,
       SHARE_EXECUTOR_GB = 4.01;
@@ -22,9 +22,10 @@ export async function main(_ns) {
         maxShare = 0.25;
     }
 
-    const threads = ((ns.getServerMaxRam(hostname)*maxShare)/SHARE_EXECUTOR_GB)|0;
 
     while (true) {
+        maxShare = store.getItem(`${hostname}:share`);
+        const threads = ((store.getItem(`${hostname}:ram`)*maxShare)/SHARE_EXECUTOR_GB)|0;
         ns.exec('/bin/_share.js', hostname, threads);
         await ns.sleep(SHARE_SLEEP_MS);
     }

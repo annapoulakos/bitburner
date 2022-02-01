@@ -1,5 +1,5 @@
-import * as utils from '/scripts/lib/utilities.js';
-import * as store from "/scripts/lib/store.js";
+import * as utils from '/lib/utilities.js';
+import * as store from "/lib/store.js";
 
 let ns;
 
@@ -57,12 +57,24 @@ async function _updateServerAttributes() {
 
     for (const host of hosts) {
         const ram = ns.getServerMaxRam(host),
-              money = ns.getServerMaxMoney(host);
+              money = ns.getServerMaxMoney(host),
+              skill = ns.getServerRequiredHackingLevel(host);
 
         store.setItem(`${host}:ram`, ram);
         store.setItem(`${host}:money`, money);
+        store.setItem(`${host}:skill`, skill);
         await ns.sleep(0);
     }
+}
+
+async function _updateHostAttributes() {
+    utils.log(`[statmon] => updating host attributes`);
+    const cash = ns.getServerMoneyAvailable('home'),
+          ram = ns.getServerMaxRam('home');
+
+    store.setItem('home:ram', ram);
+    store.setItem('home:money', cash);
+    await ns.sleep(0);
 }
 
 /**
@@ -79,6 +91,7 @@ export async function main(_ns) {
         await _updateRooted();
         await _updateBackdoors();
         await _updateTargets();
+        await _updateHostAttributes();
 
         await ns.sleep(500);
     }

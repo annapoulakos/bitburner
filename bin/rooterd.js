@@ -1,10 +1,10 @@
-import * as utils from '/scripts/lib/utilities.js';
-import * as store from '/scripts/lib/store.js';
+import * as utils from '/lib/utilities.js';
+import * as store from '/lib/store.js';
 
 let ns;
 
 async function _rootTargets() {
-    utils.log('[startup:root] => rooting any available targets');
+    utils.log('[rooterd:root] => rooting any available targets');
     const targets = store.getItem('targets'),
           cracks = [ns.brutessh, ns.ftpcrack, ns.relaysmtp, ns.httpworm, ns.sqlinject];
     targets.forEach(target => {
@@ -16,7 +16,7 @@ async function _rootTargets() {
 }
 
 async function _fileCopy() {
-    utils.log('[startup:scp] => deploying files to targets')
+    utils.log('[rooterd:scp] => deploying files to targets')
     const targets = store.getItem('rooted'),
           FILES = [
             '/bin/_grow.js',
@@ -24,9 +24,9 @@ async function _fileCopy() {
             '/bin/_weaken.js',
             '/bin/batching.js',
             '/bin/list.js',
-            '/scripts/lib/utilities.js',
-            '/scripts/lib/store.js',
-            '/scripts/bin/connect.js'
+            '/lib/utilities.js',
+            '/lib/store.js',
+            '/bin/connect.js'
         ];
 
     for (const target of targets) {
@@ -41,7 +41,7 @@ export async function main(_ns) {
     ns = _ns;
     utils.configure(_ns);
 
-    utils.log('[crack-daemon:main] => starting crack daemon...');
+    utils.log('[rooterd:main] => starting crack daemon...');
 
     while (true) {
         await _rootTargets();

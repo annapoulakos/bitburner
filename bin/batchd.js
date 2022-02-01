@@ -1,5 +1,5 @@
-import * as utils from '/scripts/lib/utilities.js';
-import * as store from '/scripts/lib/store.js';
+import * as utils from '/lib/utilities.js';
+import * as store from '/lib/store.js';
 
 let ns;
 

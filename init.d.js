@@ -14,7 +14,8 @@ export async function main(_ns) {
         nethack: '/bin/nethackd.js',
         rooterd: '/bin/rooterd.js',
         batchd: '/bin/batchd.js',
-        shared: '/bin/shared.js'
+        shared: '/bin/shared.js',
+        mattd: '/bin/mattd.js'
     };
 
     for (const [name, path] of Object.entries(daemons)) {
