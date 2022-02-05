@@ -2,7 +2,7 @@ import * as utils from '/lib/utilities.js';
 import * as store from '/lib/store.js';
 
 const PREFIX = 'hero',
-      MAX_HERO_SERVERS = 8,
+      MAX_HERO_SERVERS = 20,
       SERVER_RAM = 4096,
       FILES = [
           '/bin/_grow.js',
