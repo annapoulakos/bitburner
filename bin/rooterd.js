@@ -9,7 +9,12 @@ async function _rootTargets() {
           cracks = [ns.brutessh, ns.ftpcrack, ns.relaysmtp, ns.httpworm, ns.sqlinject];
     targets.forEach(target => {
         cracks.forEach(fn => {try { fn(target); } catch {}});
-        try {ns.nuke(target);} catch {}
+        try {
+            ns.nuke(target);
+            utils.success(`[rooterd] => rooted ${target}`);
+        } catch {
+            utils.warn(`[rooterd] => unable to root ${target}`);
+        }
     });
 
     await ns.sleep(0);

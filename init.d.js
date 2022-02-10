@@ -8,21 +8,14 @@ let ns;
 export async function main(_ns) {
     ns = _ns;
     utils.configure(_ns);
+
+    const services = store.getItem('services:init') || [];
     store.clear()
+    store.setItem('services:init', services);
 
-    const daemons = {
-        statmon: '/bin/statmon.js',
-        nethack: '/bin/nethackd.js',
-        rooterd: '/bin/rooterd.js',
-        batchd: '/bin/batchd.js',
-        shared: '/bin/shared.js',
-        mattd: '/bin/mattd.js',
-        trashmon: '/bin/trashmon.js'
-    };
-
-    for (const [name, path] of Object.entries(daemons)) {
-        utils.log(`[init.d] => starting ${name}`);
-        ns.run(path, 1);
+    for (const service of services) {
+        utils.log(`[init.d] => starting ${service}`);
+        ns.run('/bin/service.js', 1, 'start', service);
         await ns.sleep(500);
     }
 }

@@ -42,6 +42,7 @@ export async function main(_ns) {
             ns.purchaseServer(hostname, SERVER_RAM);
             store.setItem(`${hostname}:ram`, 8192);
             store.setItem(`${hostname}:money`, 0);
+            utils.success(`[mattd] => ${hostname} purchased (8192 Gb RAM)`);
 
             await ns.scp(FILES, 'home', hostname);
             ns.exec('/bin/shared.js', hostname, 1);

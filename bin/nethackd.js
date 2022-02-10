@@ -1,92 +1,125 @@
-// TODO: Refactor to use utils.* and store.*
-const FLAGS = [
-	['verbose', false],
-	['maxprod', 500000]
-];
+import * as utils from '/lib/utilities.js';
+import * as store from '/lib/store.js';
 
-var _ns = null;
-var _flags = {};
+const SLEEP_DELAY_MS = 10000;
+let ns, hacknet;
 
-function _disable() {
-	const logs = [
-		'disableLog',
-		'getServerMoneyAvailable',
-		'hacknet.getPurchaseNodeCost',
-		'hacknet.purchaseNode',
-		'hacknet.numNodes',
-		'hacknet.getLevelUpgradeCost',
-		'hacknet.upgradeLevel',
-		'hacknet.getRamUpgradeCost',
-		'hacknet.upgradeRam',
-		'hacknet.getCoreUpgradeCost',
-		'hacknet.upgradeCore',
-		'hacknet.getNodeStats',
-		'sleep'
-	];
-	logs.forEach(l => _ns.disableLog(l));
+function _numNodes() {
+	return hacknet.numNodes();
 }
 
-function log(message) {
-	if (_flags['verbose']) { _ns.tprint(message); }
-	_ns.print(message)
+function _maxNodes() {
+	return hacknet.maxNumNodes();
 }
 
-/** @param {NS} ns **/
-export async function main(ns) {
-	_ns = ns
-	_disable();
-	_flags = ns.flags(FLAGS);
+async function _purchaseNodes() {
+	const curr = _numNodes(),
+		  maxn = _maxNodes();
 
-	log('*** HACKNET AUTO_BUYER ***');
+	if (curr < maxn) {
+		let nodesPurchased = 0,
+			cashOnHand = store.getItem('home:money');
 
-	let running = true;
+		while (cashOnHand > hacknet.getPurchaseNodeCost()) {
+			try {
+				hacknet.purchaseNode();
+				nodesPurchased += 1;
+			} catch {}
 
-	const money = ns.getServerMoneyAvailable,
-		  buy = ns.hacknet.purchaseNode,
-		  levelCost = ns.hacknet.getLevelUpgradeCost,
-		  upLevel = ns.hacknet.upgradeLevel,
-		  nodes = ns.hacknet.numNodes,
-		  ramCost = ns.hacknet.getRamUpgradeCost,
-		  upRam = ns.hacknet.upgradeRam,
-		  coreCost = ns.hacknet.getCoreUpgradeCost,
-		  upCore = ns.hacknet.upgradeCore;
+			await ns.sleep(1000);
+			cashOnHand = store.getItem('home:money');
+		}
 
+		utils.info(`[nethackd] => purchased ${nodesPurchased} nodes`);
+	}
+}
+
+async function _applyUpgrade(index, costFn, upgradeFn, name) {
+	let count = 0,
+		cashOnHand = store.getItem('home:money');
+
+	while (cashOnHand > costFn(index, 1)) {
+		try {
+			upgradeFn(index);
+			count += 1;
+		} catch {}
+
+		await ns.sleep(1000);
+		cashOnHand = store.getItem('home:money');
+	}
+
+	utils.info(`[nethackd:${index}] => added ${count} ${name} upgrades`);
+}
+
+async function _levelNode(index) {
+	await _applyUpgrade(index, hacknet.getLevelUpgradeCost, hacknet.upgradeLevel, 'level');
+}
+
+async function _upgradeRam(index) {
+	await _applyUpgrade(index, hacknet.getRamUpgradeCost, hacknet.upgradeRam, 'ram');
+}
+
+async function _upgradeCore(index) {
+	await _applyUpgrade(index, hacknet.getCoreUpgradeCost, hacknet.upgradeCore, 'core');
+}
+
+async function _getProduction() {
+	const nodes = _numNodes();
+	let production = 0;
+
+	for (let i=0; i<nodes; i++) {
+		production += hacknet.getNodeStats(i).production;
+	}
+
+	store.setItem('hacknet:production', production);
+	await ns.sleep(0);
+
+	return production;
+}
+
+
+/** @param {NS} _ns **/
+export async function main(_ns) {
+	ns = _ns
+	hacknet = ns.hacknet;
+	utils.configure(ns);
+
+	if (Number.isInteger(ns.args[0])) {
+		store.setItem('hacknet:maxprod', ns.args[0]);
+	}
+
+	let running = true,
+		maxprod = store.getItem('hacknet:maxprod'),
+		production = _getProduction();
+
+	if (maxprod == null) {
+		store.setItem('hacknet:maxprod', 10000);
+		maxprod = store.getItem('hacknet:maxprod');
+	}
 
 	while (running) {
-		if (money("home") > ns.hacknet.getPurchaseNodeCost()) {
-			log(`[hacknet] => purchasing node`);
-			buy();
+		utils.log('[nethackd] => purchase nodes');
+		await _purchaseNodes();
+
+		const nodes = hacknet.numNodes();
+		for (let i=0; i<nodes; i++) {
+			utils.log(`[nethackd] => purchase levels for ${i}`);
+			await _levelNode(i);
+
+			utils.log(`[nethackd] => purchase ram for ${i}`);
+			await _upgradeRam(i);
+
+			utils.log(`[nethackd] => purchase cores for ${i}`);
+			await _upgradeCore(i);
 		}
 
-		let production = 0;
+		utils.log('[nethackd] => get current production');
+		production = await _getProduction();
 
-		for (let i=0; i < nodes(); i++) {
-			if (money("home") > levelCost(i, 1)) {
-				log(`[hacknet:${i}] => upgrade level`);
-				upLevel(i, 1);
-			}
-
-			if (money("home") > ramCost(i, 1)) {
-				log(`[hacknet:${i}] => upgrade ram`);
-				upRam(i, 1);
-			}
-
-			if (money("home") > coreCost(i, 1)) {
-				log(`[hacknet:${i}] => upgrade level`);
-				upCore(i, 1);
-			}
-
-			const node = ns.hacknet.getNodeStats(i);
-			production += node.production;
-		}
-
-		log(`[hacknet] => ${production.toFixed(2)} / second`);
-		if (production > _flags['maxprod']) {
-			log(`[hacknet] => production goal reached; exiting`);
-			running = false;
-		}
-
-		log('[hacknet] => sleeping for 10 seconds');
-		await ns.sleep(10000);
+		running = production < maxprod;
+		utils.info(`[nethackd] => production: ${production.toFixed(2)}`);
+		await ns.sleep(SLEEP_DELAY_MS);
 	}
+
+	utils.success(`[nethackd] => production goal reached (${store.GetItem("hacknet:production").toFixed(2)})`);
 }

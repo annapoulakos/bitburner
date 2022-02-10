@@ -1,7 +1,7 @@
 import * as utils from '/lib/utilities.js';
 import * as store from '/lib/store.js';
 
-let ns;
+let ns, scriptName, scriptRunning, host;
 
 const DAEMON_MAP = {
 	nethackd: '/bin/nethackd.js',
@@ -10,56 +10,92 @@ const DAEMON_MAP = {
 	mattd: '/bin/mattd.js',
 	herod: '/bin/herod.js',
 	batchd: '/bin/batchd.js',
-	shared: '/bin/shared.js'
+	shared: '/bin/shared.js',
+	trashmon: '/bin/trashmon.js'
+};
+
+const FN_MAP = {
+	start: _start,
+	stop: _stop,
+	restart: _restart,
+	add: _add,
+	list: _list,
+	remove: _remove
 };
 
 export function autocomplete(data, args) {
 	return [
-		...['start', 'stop', 'restart'],
+		...Object.keys(FN_MAP),
 		...Object.keys(DAEMON_MAP)
 	];
 }
 
+function _start(service) {
+	if (scriptRunning) {
+		utils.warn(`[service:start] => ${service} is already running`);
+	} else {
+		ns.run(scriptName, 1);
+		utils.success(`[service:start] => started ${service}`);
+	}
+}
+
+function _stop(service) {
+	if (scriptRunning) {
+		ns.kill(scriptName, host);
+		utils.success(`[service:stop] => stopped ${service}`);
+	} else {
+		utils.warn(`[service:stop] => ${service} is not running`);
+	}
+}
+
+function _restart(service) {
+	if (scriptRunning) {
+		ns.kill(scriptName, host);
+		utils.info(`[service:restart] => stopped ${service}`);
+	}
+
+	ns.run(scriptName, 1);
+	utils.success(`[service:restart] => ${service} started`);
+}
+
+function _add(service) {
+	let services = store.getItem('services:init') || [];
+
+	if (!services.includes(service)) {
+		services.push(service);
+		utils.success(`[services:add] => added ${service} to init; ${services.length} services`);
+	}
+	store.setItem('services:init', services);
+}
+
+function _list(service) {
+	let services = store.getItem('services:init') || [];
+	services.forEach(service => utils.log(`[service:list] => ${service}`));
+}
+
+function _remove(service) {
+	let services = store.getItem('services:init');
+
+	if (services.includes(service)) {
+		const index = services.indexOf(service);
+		services.splice(index, 1);
+		store.setItem('services:init', services);
+		utils.success(`[service:remove] => removed ${service}; ${services.length} remaining`);
+	}
+}
 
 /** @param {NS} ns **/
 export async function main(_ns) {
 	ns = _ns;
 	utils.configure(_ns);
 
-	const host = ns.getHostname(),
-		  command = ns.args[0],
-		  args = ns.args.slice(1),
-		  scriptName = DAEMON_MAP[args[0]],
-		  scriptRunning = ns.scriptRunning(scriptName, host);
+	const command = ns.args[0],
+		  service = ns.args[1],
+		  fn = FN_MAP[command];
 
-	if (command == 'start') {
-		if (!scriptRunning) {
-			utils.log(`[service:start] => starting ${args[0]}`);
-			ns.run(scriptName, 1);
-            utils.success(`[service:start] => started ${args[0]}`);
-		} else {
-			utils.log(`[service:start] => ${args[0]} is already running`);
-            utils.warn(`[service:start] => ${args[0]} is already running`);
-		}
-	}
-	else if (command == 'stop') {
-		if (scriptRunning) {
-			utils.log(`[service:stop] => stopping ${args[0]}`);
-			ns.kill(scriptName, host);
-            utils.success(`[service:stop] => stopped ${args[0]}`);
-		} else {
-			utils.log(`[service:stop] => ${args[0]} is not running`);
-            utils.warn(`[service:stop] => ${args[0]} is not running`);
-		}
-	} else if (command == 'restart') {
-        if (scriptRunning) {
-            utils.log(`[service:restart] => stopping ${args[0]}`);
-            ns.kill(scriptName, host)
-            utils.success(`[service:restart] => stopped ${args[0]}`);
-        }
+	host = ns.getHostname()
+	scriptName = DAEMON_MAP[service];
+	scriptRunning = ns.scriptRunning(scriptName, host);
 
-        utils.log(`[service:restart] => starting ${args[0]}`);
-        ns.run(scriptName, 1);
-        utils.success(`[service:restart] => started ${args[0]}`);
-    }
+	fn(service);
 }

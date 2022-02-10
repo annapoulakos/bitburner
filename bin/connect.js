@@ -1,4 +1,6 @@
-import * as utils from "/scripts/lib/utilities.js";
+import * as utils from "/lib/utilities.js";
+import * as store from '/lib/store.js';
+
 let ns = null;
 
 export function autocomplete(data, args) {
@@ -15,6 +17,7 @@ export async function main(_ns) {
         let spl = snl.map(() => ""),
             v = [],
             q = [st];
+
         while(q.length>0) {
             let n=q.shift();
             v.push(n);
@@ -26,15 +29,16 @@ export async function main(_ns) {
                 }
             }
         }
+
         return spl;
     };
 
-    let start = ns.args[0],
-        end = ns.args[1],
+    let start = 'home',
+        end = ns.args[0],
         path = [end],
-        snl = ns.read('/data/statistician.graph.txt').split(',');
+        snl = store.getItem('hosts');
 
-    snl.push('home');
+    snl.unshift('home');
     let spl=gPathList(snl, start);
 
     while(path[path.length-1] != start) {

@@ -35,6 +35,7 @@ export async function main(_ns) {
                 if (!ns.isRunning('/bin/batching.js', target, ...args)) {
                     utils.log('[batch-daemon:main] => executing batcher');
                     ns.exec('/bin/batching.js', target, 1, ...args);
+                    utils.success(`[batchd] => started ${threads} threads on ${target}`);
                 } else {
                     utils.log('[batch-daemon:main] => already running');
                 }
